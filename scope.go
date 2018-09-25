@@ -343,11 +343,15 @@ func (scope *Scope) QuotedTableName() (name string) {
 func (scope *Scope) CombinedConditionSql() string {
 	joinSQL := scope.joinsSQL()
 	whereSQL := scope.whereSQL()
+	limitSQL := scope.limitAndOffsetSQL()
 	if scope.Search.raw {
 		whereSQL = strings.TrimSuffix(strings.TrimPrefix(whereSQL, "WHERE ("), ")")
 	}
+	if scope.Search.page > -1 {
+		limitSQL = scope.pageSQL()
+	}
 	return joinSQL + whereSQL + scope.groupSQL() +
-		scope.havingSQL() + scope.orderSQL() + scope.limitAndOffsetSQL()
+		scope.havingSQL() + scope.orderSQL() + limitSQL
 }
 
 // Raw set raw sql
@@ -798,6 +802,15 @@ func (scope *Scope) orderSQL() string {
 
 func (scope *Scope) limitAndOffsetSQL() string {
 	return scope.Dialect().LimitAndOffsetSQL(scope.Search.limit, scope.Search.offset)
+}
+
+func (scope *Scope) pageSQL() string {
+	limit := scope.db.pageLimit
+	if limit == 0 {
+		limit = 50
+	}
+	index := scope.Search.page - scope.db.pageIndex
+	return scope.Dialect().LimitAndOffsetSQL(index*limit, limit)
 }
 
 func (scope *Scope) groupSQL() string {

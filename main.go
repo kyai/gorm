@@ -23,6 +23,8 @@ type DB struct {
 	logger            logger
 	search            *search
 	values            sync.Map
+	pageIndex         int
+	pageLimit         int
 
 	// global db
 	parent        *DB
@@ -214,6 +216,26 @@ func (s *DB) Limit(limit interface{}) *DB {
 // Offset specify the number of records to skip before starting to return the records
 func (s *DB) Offset(offset interface{}) *DB {
 	return s.clone().search.Offset(offset).db
+}
+
+// Page specify the number of the current page
+func (s *DB) Page(page int) *DB {
+	return s.clone().search.Page(page).db
+}
+
+// PageZero set the page index as zero or one
+func (s *DB) PageZero(zero bool) *DB {
+	if zero {
+		s.pageIndex = 0
+	} else {
+		s.pageIndex = 1
+	}
+	return s
+}
+
+func (s *DB) PageSize(size int) *DB {
+	s.pageLimit = size
+	return s
 }
 
 // Order specify order when retrieve records from database, set reorder to `true` to overwrite defined conditions
@@ -754,6 +776,8 @@ func (s *DB) clone() *DB {
 		parent:            s.parent,
 		logger:            s.logger,
 		logMode:           s.logMode,
+		pageIndex:         s.pageIndex,
+		pageLimit:         s.pageLimit,
 		Value:             s.Value,
 		Error:             s.Error,
 		blockGlobalUpdate: s.blockGlobalUpdate,
@@ -766,7 +790,7 @@ func (s *DB) clone() *DB {
 	})
 
 	if s.search == nil {
-		db.search = &search{limit: -1, offset: -1}
+		db.search = &search{limit: -1, offset: -1, page: -1}
 	} else {
 		db.search = s.search.clone()
 	}

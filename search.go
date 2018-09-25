@@ -19,6 +19,7 @@ type search struct {
 	preload          []searchPreload
 	offset           interface{}
 	limit            interface{}
+	page             int
 	group            string
 	tableName        string
 	raw              bool
@@ -89,6 +90,11 @@ func (s *search) Limit(limit interface{}) *search {
 
 func (s *search) Offset(offset interface{}) *search {
 	s.offset = offset
+	return s
+}
+
+func (s *search) Page(page int) *search {
+	s.page = page
 	return s
 }
 

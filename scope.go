@@ -810,7 +810,7 @@ func (scope *Scope) pageSQL() string {
 		limit = 50
 	}
 	index := scope.Search.page - scope.db.pageIndex
-	return scope.Dialect().LimitAndOffsetSQL(index*limit, limit)
+	return scope.Dialect().LimitAndOffsetSQL(limit, index*limit)
 }
 
 func (scope *Scope) groupSQL() string {
